@@ -1,0 +1,789 @@
+buildCmd: mvn -e -X -Dlicense.skip=true -Dmaven.enforcer.skip=true  -Denforcer.skip=true -Dair.check.skip-all=true -Dmaven.test.skip=true compile
+testCmd: true
+skipVerification: true
+cbmcArguments:
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
+phases:
+  -
+    # Phase 0 PRETTY, SIMPLE and SMART - pretty tests, do not test private methods directly, Smart-Harness
+    timeout: 180
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # Instrument the file as opposed to the function only
+      cover-only: file
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+  -
+    # Phase 1 PRETTY AND COMPLEX - standard models only, pretty tests, do not test private methods directly, input factory
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+      # Limit input factory recursive depth (default 0 = no recursion allowed)
+      java-test-input-factory-bmc-recursion-limit: 4
+  -
+    # Phase 2 FIFO Strategy - pretty tests, do not test private methods directly, fifo
+    timeout: 100
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Add constraint that strings are printable
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 3 Exceptions - do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 4 Direct testing - test private methods directly, increased reflection
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # If the logs contain output of the following then proceed to phase X
+    nextPhase:
+      # If the function is not analysable then do not pass onto the next phase
+      not_analyzed: null
+  -
+    # PHASE 5 Mocking - aggressive mocking, do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 3000
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Only load the class (and related inner/outer classes) containing the method under test,
+      load-containing-class-only: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+units:
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size16Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size2Ser.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Mult4Ser.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size48Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size32Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size40Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size20Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size64Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Mult8Ser.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size1Ser.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size24Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size56Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size12Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size1Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$LongDeserializer.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size2Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size8Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$Size4Des.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/VSizeLongSerde$LongSerializer.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/VSizeLongSerde.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/IAE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/IAE.java
+ - target:
+   - dir: extensions-core/histogram/target/classes
+     file: org/apache/druid/query/aggregation/histogram/ArrayUtils.class
+     sourceDir: extensions-core/histogram/src/main/java
+     sourceFile: org/apache/druid/query/aggregation/histogram/ArrayUtils.java
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/dimension/ColumnSelectorStrategyFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/dimension/ColumnSelectorStrategyFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/BaseQuery.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/BaseQuery.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/spec/QuerySegmentSpec.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/spec/QuerySegmentSpec.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/dimension/DimensionSpec.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/dimension/DimensionSpec.java
+   - dir: core/target/classes
+     file: org/apache/druid/collections/ReferenceCountingResourceHolder.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/collections/ReferenceCountingResourceHolder.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$TimestampExtractFunction.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/orderby/OrderByColumnSpec.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/orderby/OrderByColumnSpec.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/Grouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/Grouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$InputRawSupplierColumnSelectorStrategyFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/Query.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/Query.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$RowBasedKeySerdeFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/DateTimes.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/DateTimes.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/ISE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/ISE.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/Numbers.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/Numbers.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/LimitedBufferHashGrouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/LimitedBufferHashGrouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/AbstractBufferHashGrouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/AbstractBufferHashGrouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/RowBasedColumnSelectorFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/RowBasedColumnSelectorFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/ColumnSelectorFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/ColumnSelectorFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$1.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/granularity/Granularity$IntervalIterable.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/granularity/Granularity.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/LimitedTemporaryStorage.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/LimitedTemporaryStorage.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$3.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$InputRawSupplierColumnSelectorStrategy.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$4.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/Grouper$KeySerdeFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/Grouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/column/ColumnCapabilities.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/column/ColumnCapabilities.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/BufferHashGrouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/BufferHashGrouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$2.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/virtual/VirtualizedColumnSelectorFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/virtual/VirtualizedColumnSelectorFactory.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/logger/Logger.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/logger/Logger.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$6.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/Grouper$BufferComparator.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/Grouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/SpillingGrouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/SpillingGrouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$5.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/Grouper$KeySerde.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/Grouper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/CloseableGrouperIterator.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/CloseableGrouperIterator.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/Pair.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/Pair.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/ConcurrentGrouper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/ConcurrentGrouper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/parsers/ParseException.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/parsers/ParseException.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$8.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/aggregation/AggregatorFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/aggregation/AggregatorFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/ParallelCombiner.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/ParallelCombiner.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/column/ValueType.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/column/ValueType.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$ValueExtractFunction.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/io/Closer.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/io/Closer.java
+   - dir: core/target/classes
+     file: org/apache/druid/common/guava/GuavaUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/common/guava/GuavaUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/strategy/GroupByStrategyV2.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/strategy/GroupByStrategyV2.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$7.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/QueryContexts.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/QueryContexts.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/DimensionHandlerUtils.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/DimensionHandlerUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper$9.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/RowBasedGrouperHelper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/granularity/Granularity.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/granularity/Granularity.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/GroupByQueryConfig.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/GroupByQueryConfig.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/orderby/DefaultLimitSpec.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/orderby/DefaultLimitSpec.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/GroupByQuery.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/GroupByQuery.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/IAE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/IAE.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/ColumnSelectorPlus.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/ColumnSelectorPlus.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/VirtualColumns.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/VirtualColumns.java
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/filter/ColumnComparisonFilter.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/filter/ColumnComparisonFilter.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/dimension/ColumnSelectorStrategyFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/dimension/ColumnSelectorStrategyFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/filter/ValueMatcher.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/filter/ValueMatcher.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/ColumnSelectorFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/ColumnSelectorFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/dimension/DimensionSpec.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/dimension/DimensionSpec.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/ColumnSelectorPlus.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/ColumnSelectorPlus.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/DimensionHandlerUtils.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/DimensionHandlerUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/filter/ValueMatcherColumnSelectorStrategy.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/filter/ValueMatcherColumnSelectorStrategy.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/filter/BooleanValueMatcher.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/filter/BooleanValueMatcher.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/filter/BitmapIndexSelector.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/filter/BitmapIndexSelector.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/filter/ValueMatcherColumnSelectorStrategyFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/filter/ValueMatcherColumnSelectorStrategyFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/ColumnSelector.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/ColumnSelector.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/filter/ColumnComparisonFilter$1.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/filter/ColumnComparisonFilter.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/filter/FalseValueMatcher.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/filter/FalseValueMatcher.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/BitmapResultFactory.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/BitmapResultFactory.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/column/ColumnCapabilities.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/column/ColumnCapabilities.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/filter/TrueValueMatcher.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/filter/TrueValueMatcher.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/column/ValueType.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/column/ValueType.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/filter/ValueGetter.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/filter/ValueGetter.java
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/ByteBufferHashTable.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/ByteBufferHashTable.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/Groupers.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/Groupers.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/ISE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/ISE.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/groupby/epinephelinae/ByteBufferHashTable$BucketUpdateHandler.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/groupby/epinephelinae/ByteBufferHashTable.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/IAE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/IAE.java
+ - target:
+   - dir: extensions-contrib/cloudfiles-extensions/target/classes
+     file: org/apache/druid/storage/cloudfiles/CloudFilesUtils.class
+     sourceDir: extensions-contrib/cloudfiles-extensions/src/main/java
+     sourceFile: org/apache/druid/storage/cloudfiles/CloudFilesUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/RetryUtils$Task.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/RetryUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: extensions-contrib/cloudfiles-extensions/target/classes
+     file: org/apache/druid/storage/cloudfiles/CloudFilesUtils$1.class
+     sourceDir: extensions-contrib/cloudfiles-extensions/src/main/java
+     sourceFile: org/apache/druid/storage/cloudfiles/CloudFilesUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/RetryUtils$CleanupAfterFailure.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/RetryUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/RetryUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/RetryUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/logger/Logger.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/logger/Logger.java
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexed.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexed.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexed$1.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexed.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/io/Closer.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/io/Closer.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/IndexedIterable$1.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/IndexedIterable.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/serde/MetaSerdeHelper$FieldWriter.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/serde/MetaSerdeHelper.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/CompressionStrategy.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/CompressionStrategy.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/IAE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/IAE.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/guava/CloseQuietly.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/guava/CloseQuietly.java
+   - dir: core/target/classes
+     file: org/apache/druid/common/config/NullHandling.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/common/config/NullHandling.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/DecompressingByteBufferObjectStrategy.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/DecompressingByteBufferObjectStrategy.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexed$3.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexed.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/writeout/HeapByteBufferWriteOutBytes.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/writeout/HeapByteBufferWriteOutBytes.java
+   - dir: processing/target/classes
+     file: org/apache/druid/query/monomorphicprocessing/RuntimeShapeInspector.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/monomorphicprocessing/RuntimeShapeInspector.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexedWriter.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexedWriter.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexedWriter$1.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexedWriter.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/CompressionStrategy$Compressor.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/CompressionStrategy.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/writeout/ByteBufferWriteOutBytes.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/writeout/ByteBufferWriteOutBytes.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexed$2.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexed.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/serde/MetaSerdeHelper.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/serde/MetaSerdeHelper.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/io/smoosh/FileSmoosher.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/io/smoosh/FileSmoosher.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/ObjectStrategy.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/ObjectStrategy.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/io/smoosh/SmooshedFileMapper.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/io/smoosh/SmooshedFileMapper.java
+   - dir: core/target/classes
+     file: org/apache/druid/common/config/NullValueHandlingConfig.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/common/config/NullValueHandlingConfig.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/logger/Logger.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/logger/Logger.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/io/smoosh/Metadata.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/io/smoosh/Metadata.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/Indexed.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/Indexed.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/writeout/WriteOutBytes.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/writeout/WriteOutBytes.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/GenericIndexed$BufferIndexed.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/GenericIndexed.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: processing/target/classes
+     file: org/apache/druid/segment/data/IndexedIterable.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/segment/data/IndexedIterable.java
+   - dir: core/target/classes
+     file: org/apache/druid/common/utils/SerializerUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/common/utils/SerializerUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/io/Channels.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/io/Channels.java
+ - target:
+   - dir: processing/target/classes
+     file: org/apache/druid/query/ordering/StringComparator.class
+     sourceDir: processing/src/main/java
+     sourceFile: org/apache/druid/query/ordering/StringComparator.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/StringUtils.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/StringUtils.java
+   - dir: core/target/classes
+     file: org/apache/druid/java/util/common/IAE.class
+     sourceDir: core/src/main/java
+     sourceFile: org/apache/druid/java/util/common/IAE.java
+ - target:
+   - dir: extendedset/target/classes
+     file: org/apache/druid/extendedset/intset/ConciseSetUtils.class
+     sourceDir: extendedset/src/main/java
+     sourceFile: org/apache/druid/extendedset/intset/ConciseSetUtils.java
