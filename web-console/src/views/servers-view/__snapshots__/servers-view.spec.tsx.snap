@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`describe servers view action servers view 1`] = `
+exports[`servers view action servers view 1`] = `
 <div
   className="servers-view app-view"
 >
@@ -30,17 +30,16 @@ exports[`describe servers view action servers view 1`] = `
         Tier
       </Blueprint3.Button>
     </Blueprint3.ButtonGroup>
-    <Blueprint3.Button
-      icon="refresh"
-      onClick={[Function]}
-      text="Refresh"
+    <RefreshButton
+      localStorageKey="servers-refresh-rate"
+      onRefresh={[Function]}
     />
     <Blueprint3.Button
       icon="application"
       onClick={[Function]}
       text="Go to SQL"
     />
-    <TableColumnSelection
+    <TableColumnSelector
       columns={
         Array [
           "Server",
@@ -92,6 +91,7 @@ exports[`describe servers view action servers view 1`] = `
         "Header": undefined,
         "Pivot": undefined,
         "PivotValue": undefined,
+        "Placeholder": undefined,
         "aggregate": undefined,
         "className": "",
         "filterAll": false,
@@ -104,6 +104,7 @@ exports[`describe servers view action servers view 1`] = `
         "getProps": [Function],
         "headerClassName": "",
         "headerStyle": Object {},
+        "minResizeWidth": 11,
         "minWidth": 100,
         "resizable": undefined,
         "show": true,
@@ -202,6 +203,7 @@ exports[`describe servers view action servers view 1`] = `
     defaultExpanded={Object {}}
     defaultFilterMethod={[Function]}
     defaultFiltered={Array []}
+    defaultPage={0}
     defaultPageSize={50}
     defaultResized={Array []}
     defaultSortDesc={false}
@@ -252,6 +254,7 @@ exports[`describe servers view action servers view 1`] = `
     onFetchData={[Function]}
     onFilteredChange={[Function]}
     originalKey="_original"
+    pageJumpText="jump to page"
     pageSizeOptions={
       Array [
         5,
@@ -270,6 +273,7 @@ exports[`describe servers view action servers view 1`] = `
     previousText="Previous"
     resizable={true}
     resolveData={[Function]}
+    rowsSelectorText="rows per page"
     rowsText="rows"
     showPageJump={true}
     showPageSizeOptions={true}

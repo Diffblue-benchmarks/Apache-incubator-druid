@@ -1,16 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`describe data source view data source view snapshot 1`] = `
+exports[`data source view matches snapshot 1`] = `
 <div
   className="data-sources-view app-view"
 >
   <ViewControlBar
     label="Datasources"
   >
-    <Blueprint3.Button
-      icon="refresh"
-      onClick={[Function]}
-      text="Refresh"
+    <RefreshButton
+      localStorageKey="datasources-refresh-rate"
+      onRefresh={[Function]}
     />
     <Blueprint3.Button
       icon="application"
@@ -22,11 +21,12 @@ exports[`describe data source view data source view snapshot 1`] = `
       label="Show disabled"
       onChange={[Function]}
     />
-    <TableColumnSelection
+    <TableColumnSelector
       columns={
         Array [
           "Datasource",
           "Availability",
+          "Segment load/drop",
           "Retention",
           "Compaction",
           "Size",
@@ -71,6 +71,7 @@ exports[`describe data source view data source view snapshot 1`] = `
         "Header": undefined,
         "Pivot": undefined,
         "PivotValue": undefined,
+        "Placeholder": undefined,
         "aggregate": undefined,
         "className": "",
         "filterAll": false,
@@ -83,6 +84,7 @@ exports[`describe data source view data source view snapshot 1`] = `
         "getProps": [Function],
         "headerClassName": "",
         "headerStyle": Object {},
+        "minResizeWidth": 11,
         "minWidth": 100,
         "resizable": undefined,
         "show": true,
@@ -108,6 +110,14 @@ exports[`describe data source view data source view snapshot 1`] = `
           "id": "availability",
           "show": true,
           "sortMethod": [Function],
+        },
+        Object {
+          "Cell": [Function],
+          "Header": "Segment load/drop",
+          "accessor": "num_segments_to_load",
+          "filterable": false,
+          "id": "load-drop",
+          "show": true,
         },
         Object {
           "Cell": [Function],
@@ -156,6 +166,7 @@ exports[`describe data source view data source view snapshot 1`] = `
     defaultExpanded={Object {}}
     defaultFilterMethod={[Function]}
     defaultFiltered={Array []}
+    defaultPage={0}
     defaultPageSize={50}
     defaultResized={Array []}
     defaultSortDesc={false}
@@ -206,6 +217,7 @@ exports[`describe data source view data source view snapshot 1`] = `
     onFetchData={[Function]}
     onFilteredChange={[Function]}
     originalKey="_original"
+    pageJumpText="jump to page"
     pageSizeOptions={
       Array [
         5,
@@ -223,6 +235,7 @@ exports[`describe data source view data source view snapshot 1`] = `
     previousText="Previous"
     resizable={true}
     resolveData={[Function]}
+    rowsSelectorText="rows per page"
     rowsText="rows"
     showPageJump={true}
     showPageSizeOptions={true}
